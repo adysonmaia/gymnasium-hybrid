@@ -1,5 +1,5 @@
 import pytest
-from gym_hybrid.agents import MovingAgent
+from gymnasium_hybrid.agents import MovingAgent
 from math import pi
 
 

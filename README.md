@@ -1,6 +1,8 @@
-# gym-hybrid
+# gymnasium-hybrid
 
 Repository containing a collection of environment for reinforcement learning task possessing discrete-continuous hybrid action space.
+
+Note: `gymnasium-hybrid` is a fork of [gym-hybrid](https://github.com/thomashirtz/gym-hybrid) to work as [gymnasium](https://gymnasium.farama.org/) environments
 
 ## "Sliding-v0" and "Moving-v0" 
 
@@ -80,8 +82,8 @@ action = (2, [])
 ### Basics
 Make and initialize an environment:
 ```python
-import gym
-import gym_parametrized
+import gymnasium as gym
+import gymnasium-hybrid
 
 sliding_env = gym.make('Sliding-v0')
 sliding_env.reset()
@@ -101,28 +103,29 @@ Run a random agent:
 ```python
 done = False
 while not done:
-    state, reward, done, info = env.step(env.action_space.sample())
-    print(f'State: {state} Reward: {reward} Done: {done}')
+    state, reward, terminated, truncated, info = env.step(env.action_space.sample())
+    done = terminated or truncated
+    print(f'State: {state} Reward: {reward} Terminated: {terminated} Truncated: {truncated}')
 ```
 ### Parameters
 The parameter that can be modified during the initialization are:
-* `seed` (default = None)
 * `max_turn`, angle in radi that can be achieved in one step (default = np.pi/2)
 * `max_acceleration`, acceleration that can be achieved in one step (if the input parameter is 1) (default = 0.5)
 * `delta_t`, time step of one step (default = 0.005)
 * `max_step`, limit of the number of step before the end of an environment (default = 200)
 * `penalty`, value substracted to the reward each step to incentivise the agent to finish the environment quicker (default = 0.001)
+* `render_mode`, render mode that can be 'human', 'rgb_array', or None (default = None)
 
 Initialization with custom parameters:
 ```python
 env = gym.make(
-    'Moving-v0', 
-    seed=0, 
+    'Moving-v0',  
     max_turn=1,
     max_acceleration=1.0, 
     delta_t=0.001, 
     max_step=500, 
-    penalty=0.01
+    penalty=0.01,
+    render_mode='human'
 )
 ```
 
@@ -143,5 +146,5 @@ This environment is described in several papers such as:
 
 Direct Installation from github using pip by running this command:
 ```shell
-pip install git+https://github.com/thomashirtz/gym-hybrid#egg=gym-hybrid
+pip install git+https://github.com/adysonmaia/gymnasium-hybrid#egg=gymnasium-hybrid
 ```  

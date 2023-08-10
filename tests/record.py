@@ -1,6 +1,6 @@
-import gym
-import gym_hybrid
-from gym import wrappers
+import gymnasium as gym
+import gymnasium_hybrid
+from gymnasium import wrappers
 
 
 if __name__ == '__main__':
@@ -11,6 +11,7 @@ if __name__ == '__main__':
 
     done = False
     while not done:
-        _, _, done, _ = env.step(env.action_space.sample())
+        _, _, terminated, truncated, _ = env.step(env.action_space.sample())
+        done = terminated or truncated
 
     env.close()
