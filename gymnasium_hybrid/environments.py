@@ -5,7 +5,6 @@ from collections import namedtuple
 
 import gymnasium as gym
 from gymnasium import spaces
-from gymnasium.utils import seeding
 from gymnasium.error import DependencyNotInstalled
 gym.logger.set_level(40)  # noqa
 
@@ -235,12 +234,31 @@ class BaseEnv(gym.Env[np.ndarray, Tuple]):
         self.surf = pygame.Surface((self.screen_width, self.screen_height))
         self.surf.fill((255, 255, 255))
 
-        # agent_coord = (int(unit_x * (1 + self.agent.x)), int(unit_y * (1 + self.agent.y)))
+        # Draw target
+        target_coord = pygame.math.Vector2(
+            unit_x * (1 + self.target.x),
+            unit_y * (1 + self.target.y)
+        )
+        gfxdraw.aacircle(
+            self.surf,
+            int(target_coord.x),
+            int(target_coord.y),
+            int(unit_x * self.target_radius),
+            (255, 127, 127)
+        )
+        gfxdraw.filled_circle(
+            self.surf,
+            int(target_coord.x),
+            int(target_coord.y),
+            int(unit_x * self.target_radius),
+            (255, 127, 127)
+        )
+
+        # Draw agent
         agent_coord = pygame.math.Vector2(
             unit_x * (1 + self.agent.x),
             unit_y * (1 + self.agent.y)
         )
-        # Draw agent
         gfxdraw.aacircle(
             self.surf,
             int(agent_coord.x),
@@ -275,26 +293,6 @@ class BaseEnv(gym.Env[np.ndarray, Tuple]):
             (0, 0, 0)
         )
 
-        # Draw target
-        target_coord = pygame.math.Vector2(
-            unit_x * (1 + self.target.x),
-            unit_y * (1 + self.target.y)
-        )
-        gfxdraw.aacircle(
-            self.surf,
-            int(target_coord.x),
-            int(target_coord.y),
-            int(unit_x * self.target_radius),
-            (255, 127, 127)
-        )
-        gfxdraw.filled_circle(
-            self.surf,
-            int(target_coord.x),
-            int(target_coord.y),
-            int(unit_x * self.target_radius),
-            (255, 127, 127)
-        )
-
         self.surf = pygame.transform.flip(self.surf, False, True)
         self.screen.blit(self.surf, (0, 0))
         if self.render_mode == "human":
@@ -307,42 +305,6 @@ class BaseEnv(gym.Env[np.ndarray, Tuple]):
                 np.array(pygame.surfarray.pixels3d(self.screen)), axes=(1, 0, 2)
             )
 
-    def render_old(self, mode='human'):
-        screen_width = 400
-        screen_height = 400
-        unit_x = screen_width / 2
-        unit_y = screen_height / 2
-        agent_radius = 0.05
-
-        if self.viewer is None:
-            from gymnasium.envs.classic_control import rendering
-            self.viewer = rendering.Viewer(screen_width, screen_height)
-
-            agent = rendering.make_circle(unit_x * agent_radius)
-            self.agent_trans = rendering.Transform(translation=(unit_x * (1 + self.agent.x), unit_y * (1 + self.agent.y)))  # noqa
-            agent.add_attr(self.agent_trans)
-            agent.set_color(0.1, 0.3, 0.9)
-            self.viewer.add_geom(agent)
-
-            t, r, m = 0.1 * unit_x, 0.04 * unit_y, 0.06 * unit_x
-            arrow = rendering.FilledPolygon([(t, 0), (m, r), (m, -r)])
-            self.arrow_trans = rendering.Transform(rotation=self.agent.theta)  # noqa
-            arrow.add_attr(self.arrow_trans)
-            arrow.add_attr(self.agent_trans)
-            arrow.set_color(0, 0, 0)
-            self.viewer.add_geom(arrow)
-
-            target = rendering.make_circle(unit_x * self.target_radius)
-            target_trans = rendering.Transform(translation=(unit_x * (1 + self.target.x), unit_y * (1 + self.target.y)))
-            target.add_attr(target_trans)
-            target.set_color(1, 0.5, 0.5)
-            self.viewer.add_geom(target)
-
-        self.arrow_trans.set_rotation(self.agent.theta)
-        self.agent_trans.set_translation(unit_x * (1 + self.agent.x), unit_y * (1 + self.agent.y))
-
-        return self.viewer.render(return_rgb_array=mode == 'rgb_array')
-
     def close(self):
         if self.screen is not None:
             import pygame
@@ -350,6 +312,7 @@ class BaseEnv(gym.Env[np.ndarray, Tuple]):
             pygame.display.quit()
             pygame.quit()
             self.isopen = False
+            self.screen = None
 
 
 class MovingEnv(BaseEnv):
